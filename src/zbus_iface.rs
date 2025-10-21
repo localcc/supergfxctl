@@ -57,7 +57,7 @@ impl CtrlGraphics {
     async fn supported(&self) -> zbus::fdo::Result<Vec<GfxMode>> {
         if let Ok(state) = asus_gpu_mux_mode() {
             if state == AsusGpuMuxMode::Discreet {
-                return Ok(vec![GfxMode::AsusMuxDgpu]);
+                return Ok(vec![GfxMode::AsusMuxDgpu, GfxMode::Integrated, GfxMode::Hybrid]);
             }
         }
         Ok(self.get_supported_modes().await)
