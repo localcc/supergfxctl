@@ -4,6 +4,7 @@ use std::fs::{self, OpenOptions};
 use std::io::{Read, Write};
 use std::process::Command;
 use std::str::FromStr;
+use std::time::Duration;
 use std::{fs::write, path::PathBuf};
 
 use crate::error::GfxError;
@@ -12,7 +13,8 @@ use crate::special_asus::{
     AsusGpuMuxMode,
 };
 use crate::{
-    do_driver_action, find_connected_displays, find_slot_power, DriverAction, NVIDIA_DRIVERS,
+    do_driver_action, find_connected_card, find_connected_displays, find_slot_power, DriverAction,
+    NVIDIA_DRIVERS,
 };
 
 use serde_derive::{Deserialize, Serialize};
@@ -713,6 +715,19 @@ impl DiscreetGpu {
                 do_driver_action(driver, action)?;
             }
         }
+        Ok(())
+    }
+
+    pub fn send_detach_event(&self) -> Result<(), GfxError> {
+        for device in &self.devices {
+            if !device.is_dgpu() {
+                continue;
+            }
+            let card_dir = find_connected_card(device.dev_path())?;
+            let path = card_dir.join("uevent");
+            write(&path, "remove").map_err(|e| GfxError::from_io(e, path))?;
+        }
+        std::thread::sleep(Duration::from_secs(1));
         Ok(())
     }
 }

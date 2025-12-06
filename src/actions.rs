@@ -143,6 +143,8 @@ pub enum StagedAction {
     StartDisplayManager,
     /// A marker for no logind options
     NoLogind,
+    /// Send a gpu detach event to apps
+    SendDetachEvent,
     /// Load the dgpu drivers
     LoadGpuDrivers,
     /// Unload the dgpu drivers
@@ -453,6 +455,7 @@ impl StagedAction {
                     Self::CheckVulkanIcd,
                 ]),
                 GfxMode::Vfio => Action::StagedActions(vec![
+                    Self::SendDetachEvent,
                     disable_nvidia_persistenced,
                     disable_nvidia_powerd,
                     kill_gpu_use,
@@ -575,6 +578,7 @@ impl StagedAction {
             StagedAction::StartDisplayManager => {
                 do_systemd_unit_action(SystemdUnitAction::Start, DISPLAY_MANAGER)
             }
+            StagedAction::SendDetachEvent => device.send_detach_event(),
             StagedAction::LoadGpuDrivers => device.do_driver_action(DriverAction::Load),
             StagedAction::UnloadGpuDrivers => device.do_driver_action(DriverAction::Remove),
             StagedAction::LoadVfioDrivers => do_driver_action("vfio-pci", DriverAction::Load),

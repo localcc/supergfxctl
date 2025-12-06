@@ -349,11 +349,11 @@ pub fn find_slot_power(address: &str) -> Result<PathBuf, GfxError> {
     Err(GfxError::DgpuNotFound)
 }
 
-pub fn find_connected_displays(gpu_path: &Path) -> Result<Vec<String>, GfxError> {
+pub fn find_connected_card(gpu_path: &Path) -> Result<PathBuf, GfxError> {
     let drm_path = gpu_path.join("drm");
 
     // Find card directory (card0 or card1)
-    let card_dir = drm_path
+    drm_path
         .read_dir()?
         .find_map(|entry| {
             let entry = entry.ok()?;
@@ -364,7 +364,12 @@ pub fn find_connected_displays(gpu_path: &Path) -> Result<Vec<String>, GfxError>
                 None
             }
         })
-        .ok_or(GfxError::DgpuNotFound)?;
+        .ok_or(GfxError::DgpuNotFound)
+}
+
+pub fn find_connected_displays(gpu_path: &Path) -> Result<Vec<String>, GfxError> {
+    // Find card directory (card0 or card1)
+    let card_dir = find_connected_card(gpu_path)?;
 
     // Collect display names
     let displays: Vec<String> = card_dir
