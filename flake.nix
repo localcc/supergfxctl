@@ -32,6 +32,8 @@
             postPatch = ''
               substituteInPlace data/supergfxd.service --replace /usr/bin/supergfxd $out/bin/supergfxd
               substituteInPlace data/99-nvidia-ac.rules --replace /usr/bin/systemctl ${pkgs.systemd}/bin/systemctl
+              substituteInPlace src/lib.rs --replace /usr/bin/lsof ${pkgs.lsof}/bin/lsof
+              substituteInPlace src/lib.rs --replace 'Command::new("lsof")' 'Command::new("${pkgs.lsof}/bin/lsof")'
             '';
 
             nativeBuildInputs = with pkgs; [
