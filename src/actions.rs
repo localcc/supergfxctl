@@ -446,6 +446,7 @@ impl StagedAction {
             GfxMode::NvidiaNoModeset => match to {
                 GfxMode::Hybrid => Action::UserAction(UserActionRequired::Nothing),
                 GfxMode::Integrated => Action::StagedActions(vec![
+                    Self::SendDetachEvent,
                     disable_nvidia_persistenced,
                     disable_nvidia_powerd,
                     kill_gpu_use,
