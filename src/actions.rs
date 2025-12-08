@@ -446,20 +446,20 @@ impl StagedAction {
             GfxMode::NvidiaNoModeset => match to {
                 GfxMode::Hybrid => Action::UserAction(UserActionRequired::Nothing),
                 GfxMode::Integrated => Action::StagedActions(vec![
-                    Self::SendDetachEvent,
                     disable_nvidia_persistenced,
                     disable_nvidia_powerd,
                     kill_gpu_use,
+                    Self::SendDetachEvent,
                     Self::UnloadGpuDrivers,
                     Self::UnbindRemoveGpu,
                     Self::WriteModprobeConf,
                     Self::CheckVulkanIcd,
                 ]),
                 GfxMode::Vfio => Action::StagedActions(vec![
-                    Self::SendDetachEvent,
                     disable_nvidia_persistenced,
                     disable_nvidia_powerd,
                     kill_gpu_use,
+                    Self::SendDetachEvent,
                     Self::UnloadGpuDrivers,
                     Self::WriteModprobeConf,
                     Self::CheckVulkanIcd,
@@ -594,8 +594,12 @@ impl StagedAction {
                 // TODO: do this
                 Ok(())
             }
-            StagedAction::EnableNvidiaPersistenced => toggle_nvidia_persistenced(true, device.vendor()),
-            StagedAction::DisableNvidiaPersistenced => toggle_nvidia_persistenced(false, device.vendor()),
+            StagedAction::EnableNvidiaPersistenced => {
+                toggle_nvidia_persistenced(true, device.vendor())
+            }
+            StagedAction::DisableNvidiaPersistenced => {
+                toggle_nvidia_persistenced(false, device.vendor())
+            }
             StagedAction::EnableNvidiaPowerd => toggle_nvidia_powerd(true, device.vendor()),
             StagedAction::DisableNvidiaPowerd => toggle_nvidia_powerd(false, device.vendor()),
             StagedAction::RescanPci => rescan_pci(device),
