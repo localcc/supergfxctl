@@ -51,13 +51,13 @@ impl UserActionRequired {
     pub fn mode_change_action(new_mode: GfxMode, current_mode: GfxMode) -> Self {
         match new_mode {
             GfxMode::Hybrid => match current_mode {
-                GfxMode::Integrated | GfxMode::AsusEgpu => Self::Logout,
+                GfxMode::Integrated | GfxMode::AsusEgpu => Self::Nothing,
                 GfxMode::AsusMuxDgpu => Self::Reboot,
                 GfxMode::Vfio => Self::SwitchToIntegrated,
                 GfxMode::NvidiaNoModeset | GfxMode::Hybrid | GfxMode::None => Self::Nothing,
             },
             GfxMode::Integrated => match current_mode {
-                GfxMode::Hybrid | GfxMode::AsusEgpu => Self::Logout,
+                GfxMode::Hybrid | GfxMode::AsusEgpu => Self::Nothing,
                 GfxMode::AsusMuxDgpu => Self::Reboot,
                 GfxMode::Vfio | GfxMode::NvidiaNoModeset | GfxMode::Integrated | GfxMode::None => {
                     Self::Nothing
@@ -344,17 +344,15 @@ impl StagedAction {
         match from {
             GfxMode::Hybrid => match to {
                 GfxMode::Integrated => Action::StagedActions(vec![
-                    wait_logout,
-                    stop_display,
                     disable_nvidia_persistenced,
                     disable_nvidia_powerd,
                     kill_gpu_use,
+                    Self::SendDetachEvent,
                     Self::UnloadGpuDrivers,
                     Self::UnbindRemoveGpu,
                     Self::WriteModprobeConf,
                     Self::CheckVulkanIcd,
                     hotplug_rm_type,
-                    start_display,
                 ]),
                 // Ask the user to do the switch instead of doing something unexpected
                 GfxMode::Vfio => Action::UserAction(UserActionRequired::SwitchToIntegrated),
@@ -388,8 +386,6 @@ impl StagedAction {
             },
             GfxMode::Integrated => match to {
                 GfxMode::Hybrid => Action::StagedActions(vec![
-                    wait_logout,
-                    stop_display,
                     Self::WriteModprobeConf,
                     Self::CheckVulkanIcd,
                     hotplug_add_type,
@@ -397,7 +393,6 @@ impl StagedAction {
                     Self::LoadGpuDrivers,
                     enable_nvidia_persistenced,
                     enable_nvidia_powerd,
-                    start_display,
                 ]),
                 GfxMode::NvidiaNoModeset => Action::StagedActions(vec![
                     Self::WriteModprobeConf,

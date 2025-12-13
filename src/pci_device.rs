@@ -723,9 +723,11 @@ impl DiscreetGpu {
             if !device.is_dgpu() {
                 continue;
             }
-            let card_dir = find_connected_card(device.dev_path())?;
+            let Ok(card_dir) = find_connected_card(device.dev_path()) else {
+                continue;
+            };
             let path = card_dir.join("uevent");
-            write(&path, "remove").map_err(|e| GfxError::from_io(e, path))?;
+            let _ = write(&path, "remove");
         }
         std::thread::sleep(Duration::from_secs(1));
         Ok(())
